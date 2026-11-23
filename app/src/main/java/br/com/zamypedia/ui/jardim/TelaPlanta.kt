@@ -172,7 +172,7 @@ private fun ProximosCuidados(previsoes: List<Previsao>) {
             Spacer(Modifier.height(4.dp))
             if (previsoes.isEmpty()) {
                 Text(
-                    "Os lembretes aparecem depois de dois registros do mesmo cuidado, na aba Cuidados.",
+                    "Ainda sem previsão. Registre o mesmo cuidado duas vezes na aba Cuidados e o app aprende o ritmo da planta.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

@@ -38,6 +38,10 @@ App Android de cultivo de plantas domésticas, para uso pessoal e de pequenos gr
 3. Abra o arquivo `local.properties` na raiz do projeto (o Android Studio cria sozinho) e acrescente as duas linhas de `local.properties.exemplo`, com o endereço e a chave anon do passo 1.4. Esse arquivo não vai para o GitHub.
 4. Conecte um celular Android 8 ou mais novo com a **Depuração USB** ligada, ou crie um emulador em **Device Manager**, e clique em **Run** (▶).
 
+## Distribuir para o grupo
+
+O passo a passo para gerar o APK assinado e instalar nos celulares está em [DISTRIBUIR.md](DISTRIBUIR.md).
+
 ## Organização das pastas
 
 | Pasta | O que tem |
