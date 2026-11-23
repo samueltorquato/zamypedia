@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arquivo: app/src/main/res/values/themes.xml
+     Tema mínimo do sistema. As cores de verdade ficam em ui/tema/Cores.kt. -->
+<resources>
+    <style name="Theme.Zamypedia" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#F8F4EC</item>
+        <item name="android:statusBarColor">#6F7F5F</item>
+    </style>
+</resources>

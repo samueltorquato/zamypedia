@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arquivo: app/src/main/res/xml/caminhos_arquivos.xml
+     Pasta temporária onde o app de câmera grava a foto antes da compressão. -->
+<paths>
+    <cache-path name="camera" path="camera/" />
+</paths>
