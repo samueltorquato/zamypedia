@@ -1,0 +1,11 @@
+# Arquivos gerados e locais que não devem ir para o GitHub
+.gradle/
+build/
+app/build/
+.idea/
+*.iml
+.DS_Store
+captures/
+.kotlin/
+# Contém a chave do Supabase e o caminho do Android SDK de cada computador
+local.properties
