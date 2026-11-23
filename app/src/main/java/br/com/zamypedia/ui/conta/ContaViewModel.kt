@@ -14,7 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /** Situação do @ digitado no cadastro, mostrada logo abaixo do campo. */
-enum class SituacaoArroba { VAZIO, INVALIDO, CONFERINDO, DISPONIVEL, EM_USO, SEM_CONEXAO }
+enum class SituacaoArroba { VAZIO, INVALIDO, CONFERINDO, DISPONIVEL, EM_USO, ERRO }
 
 /**
  * Guarda o que foi digitado nas telas Entrar e Criar conta e conversa com o Supabase.
@@ -28,6 +28,9 @@ class ContaViewModel(private val app: ZamypediaApp) : ViewModel() {
     var arroba by mutableStateOf("")
         private set
     var situacaoArroba by mutableStateOf(SituacaoArroba.VAZIO)
+        private set
+    /** Explicação do erro quando não foi possível conferir o @. */
+    var erroArroba by mutableStateOf("")
         private set
     var carregando by mutableStateOf(false)
         private set
@@ -53,7 +56,9 @@ class ContaViewModel(private val app: ZamypediaApp) : ViewModel() {
             situacaoArroba = try {
                 if (app.conta.arrobaDisponivel(pedido)) SituacaoArroba.DISPONIVEL else SituacaoArroba.EM_USO
             } catch (e: Exception) {
-                SituacaoArroba.SEM_CONEXAO
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                erroArroba = mensagemDeErro(e)
+                SituacaoArroba.ERRO
             }
         }
     }

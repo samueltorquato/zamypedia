@@ -15,11 +15,18 @@ import io.github.jan.supabase.postgrest.Postgrest
  * são as regras de segurança (RLS) criadas pelo script supabase/001_perfil.sql.
  */
 object Supabase {
-    fun criarCliente(): SupabaseClient = createSupabaseClient(
-        supabaseUrl = BuildConfig.SUPABASE_URL,
-        supabaseKey = BuildConfig.SUPABASE_ANON_KEY,
-    ) {
-        install(Auth)
-        install(Postgrest)
+    fun criarCliente(): SupabaseClient {
+        val url = BuildConfig.SUPABASE_URL.trim().removeSuffix("/").removeSuffix("/rest/v1")
+        val chave = BuildConfig.SUPABASE_ANON_KEY.trim()
+        // Avisa claramente quando o local.properties não foi preenchido (ou o app não foi recompilado depois)
+        if (!url.startsWith("https://") || chave.isEmpty()) {
+            throw IllegalStateException(
+                "Supabase não configurado. Confira supabase.url e supabase.chave_publica no local.properties e rode o app de novo."
+            )
+        }
+        return createSupabaseClient(supabaseUrl = url, supabaseKey = chave) {
+            install(Auth)
+            install(Postgrest)
+        }
     }
 }

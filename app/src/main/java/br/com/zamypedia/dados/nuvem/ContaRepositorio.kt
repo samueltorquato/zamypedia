@@ -5,6 +5,8 @@ import br.com.zamypedia.dados.local.SessaoLocal
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.exceptions.HttpRequestException
+import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 import kotlinx.serialization.json.buildJsonObject
@@ -67,17 +69,32 @@ class ContaRepositorio(
     }
 }
 
-/** Traduz os erros mais comuns do Supabase para mensagens em português. */
+/**
+ * Traduz os erros mais comuns do Supabase para mensagens em português.
+ * Quando não reconhece o erro, mostra um resumo técnico, útil para descobrir a causa.
+ * Atenção: nunca mostramos a mensagem completa de RestException, porque ela inclui os cabeçalhos
+ * da requisição, com a chave do Supabase.
+ */
 fun mensagemDeErro(erro: Throwable): String {
-    val texto = (erro.message ?: "").lowercase()
-    return when {
-        "invalid login credentials" in texto -> "E-mail ou senha incorretos."
-        "email not confirmed" in texto -> "Confirme seu e-mail antes de entrar. Veja sua caixa de entrada."
-        "already registered" in texto || "already been registered" in texto -> "Este e-mail já tem uma conta."
-        "database error saving new user" in texto -> "Este @ acabou de ser usado por outra pessoa. Escolha outro."
-        "password" in texto && ("weak" in texto || "at least" in texto) -> "Senha fraca. Use pelo menos 8 caracteres."
-        "unable to resolve host" in texto || "failed to connect" in texto || "timeout" in texto ||
-            erro is java.io.IOException -> "Sem conexão com a internet. Criar conta e entrar precisam de internet."
-        else -> "Algo deu errado: ${erro.message ?: "erro desconhecido"}"
+    if (erro is RestException) {
+        val texto = "${erro.error} ${erro.description.orEmpty()}".lowercase()
+        return when {
+            "invalid login credentials" in texto -> "E-mail ou senha incorretos."
+            "email not confirmed" in texto -> "Confirme seu e-mail antes de entrar. Veja sua caixa de entrada."
+            "already registered" in texto || "already been registered" in texto -> "Este e-mail já tem uma conta."
+            "database error saving new user" in texto -> "Este @ acabou de ser usado por outra pessoa. Escolha outro."
+            "weak" in texto || ("password" in texto && "at least" in texto) -> "Senha fraca. Use pelo menos 8 caracteres."
+            "invalid api key" in texto || erro.statusCode == 401 ->
+                "O Supabase recusou a chave. Confira supabase.chave_publica no local.properties (código ${erro.statusCode})."
+            else -> "O Supabase respondeu com erro ${erro.statusCode}: ${erro.error} ${erro.description.orEmpty()}".trim()
+        }
     }
+    if (erro is HttpRequestException) {
+        // Falha de rede de verdade: sem internet, endereço errado ou servidor fora do ar
+        return "Não foi possível falar com o Supabase. Confira a internet e o supabase.url. Detalhe: ${erro.cause?.message ?: erro.message}"
+    }
+    if (erro is IllegalStateException && erro.message?.startsWith("Supabase não configurado") == true) {
+        return erro.message!!
+    }
+    return "Algo deu errado (${erro::class.simpleName}): ${erro.message ?: "sem detalhes"}"
 }

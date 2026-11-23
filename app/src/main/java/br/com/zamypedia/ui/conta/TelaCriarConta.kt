@@ -59,7 +59,7 @@ fun TelaCriarConta(vm: ContaViewModel, aoEntrar: () -> Unit, aoVoltar: () -> Uni
                 label = { Text("Nome de usuário") },
                 prefix = { Text("@") },
                 singleLine = true,
-                supportingText = { AvisoArroba(vm.situacaoArroba) },
+                supportingText = { AvisoArroba(vm.situacaoArroba, vm.erroArroba) },
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(4.dp))
@@ -112,14 +112,14 @@ fun TelaCriarConta(vm: ContaViewModel, aoEntrar: () -> Unit, aoVoltar: () -> Uni
 }
 
 @Composable
-private fun AvisoArroba(situacao: SituacaoArroba) {
+private fun AvisoArroba(situacao: SituacaoArroba, erro: String) {
     val (texto, cor) = when (situacao) {
         SituacaoArroba.VAZIO -> "Letras minúsculas, números, ponto ou sublinhado" to Color.Unspecified
         SituacaoArroba.INVALIDO -> "Use de 3 a 20 caracteres: a-z, 0-9, ponto ou sublinhado" to MaterialTheme.colorScheme.error
         SituacaoArroba.CONFERINDO -> "Conferindo..." to Color.Unspecified
         SituacaoArroba.DISPONIVEL -> "Disponível" to MaterialTheme.colorScheme.primary
         SituacaoArroba.EM_USO -> "Já está em uso" to MaterialTheme.colorScheme.error
-        SituacaoArroba.SEM_CONEXAO -> "Sem internet para conferir agora" to MaterialTheme.colorScheme.error
+        SituacaoArroba.ERRO -> erro to MaterialTheme.colorScheme.error
     }
     Text(texto, color = cor)
 }
