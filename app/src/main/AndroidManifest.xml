@@ -4,6 +4,8 @@
 
     <!-- Internet: só para criar conta e entrar. O jardim funciona sem ela. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Aviso diário dos lembretes. No Android 13 ou mais novo o app pede autorização à pessoa. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- A câmera é aberta pelo app de câmera do próprio celular, por isso
          NÃO declaramos a permissão CAMERA aqui. -->
 

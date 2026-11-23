@@ -16,6 +16,9 @@ interface PlantaJardimDao {
     @Query("SELECT * FROM planta_jardim WHERE id = :id AND apagado = 0")
     fun observarPorId(id: String): Flow<PlantaJardim?>
 
+    @Query("SELECT * FROM planta_jardim WHERE dono_id = :donoId AND apagado = 0")
+    suspend fun listarDoDono(donoId: String): List<PlantaJardim>
+
     @Query("SELECT * FROM planta_jardim WHERE id = :id")
     suspend fun buscarPorId(id: String): PlantaJardim?
 

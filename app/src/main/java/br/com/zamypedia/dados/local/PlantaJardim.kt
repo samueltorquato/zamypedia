@@ -27,8 +27,32 @@ data class PlantaJardim(
     @ColumnInfo(name = "alterado_em") val alteradoEm: Long,
     @ColumnInfo(name = "apagado") val apagado: Boolean = false,
     @ColumnInfo(name = "pendente_envio") val pendenteEnvio: Boolean = true,
+
+    // ----- Bloco 01: informações da planta (versão 2 do banco). Todos opcionais. -----
+    @ColumnInfo(name = "taxonomia") val taxonomia: String? = null,
+    @ColumnInfo(name = "luz") val luz: String? = null,
+    @ColumnInfo(name = "agua") val agua: String? = null,
+    @ColumnInfo(name = "solo") val solo: String? = null,
+    @ColumnInfo(name = "nutrientes") val nutrientes: String? = null,
+    @ColumnInfo(name = "sinais_folhas") val sinaisFolhas: String? = null,
+    @ColumnInfo(name = "sinais_pragas") val sinaisPragas: String? = null,
+
+    // ----- Bloco 02: desde quando está em casa (mês e dia podem ficar vazios) e floração -----
+    @ColumnInfo(name = "desde_ano") val desdeAno: Int? = null,
+    @ColumnInfo(name = "desde_mes") val desdeMes: Int? = null,
+    @ColumnInfo(name = "desde_dia") val desdeDia: Int? = null,
+    // ESTA_FLORIDA, JA_FLORESCEU ou NUNCA (ver enum Floracao)
+    @ColumnInfo(name = "floracao") val floracao: String? = null,
 ) {
     val vinculoEnum: Vinculo get() = Vinculo.deTexto(vinculo)
+    val floracaoEnum: Floracao? get() = Floracao.entries.firstOrNull { it.name == floracao }
+}
+
+/** Situação de floração do Bloco 02. */
+enum class Floracao(val rotulo: String) {
+    ESTA_FLORIDA("Está florida"),
+    JA_FLORESCEU("Já floresceu"),
+    NUNCA("Nunca floresceu"),
 }
 
 /** As três opções de vínculo do PDF de requisitos, cada uma com sua cor de tag. */

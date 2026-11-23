@@ -12,6 +12,15 @@ App Android de cultivo de plantas domésticas, para uso pessoal e de pequenos gr
 - Adicionar, editar e excluir planta, com foto da câmera ou da galeria. A foto é comprimida (WebP, até 1280 px) e perde a localização GPS.
 - Depois do primeiro login, o jardim funciona sem internet. Nesta entrega as plantas ficam só no celular: desinstalar o app apaga o jardim.
 
+## O que chega na segunda entrega
+
+- Ficha da planta com três abas: **Informações** (Bloco 01: taxonomia, luz, água, solo, nutrientes, sinais nas folhas, pragas e doenças), **História** (Bloco 02: desde quando está em casa, com só o ano obrigatório, situação de floração e datas em que floresceu) e **Cuidados** (Bloco 03: Reguei, Adubei, Podei, Troquei de vaso e Limpei as folhas, com a data de hoje ou outra escolhida no calendário, e histórico com opção de apagar).
+- Lembretes que aprendem o ritmo de cada cuidado: com dois registros ou mais, o app calcula o intervalo médio das últimas 5 datas e prevê a próxima. Com menos de dois registros não há lembrete.
+- Um único aviso por dia, às 8h, juntando todos os cuidados que vencem. Funciona sem internet.
+- Configurações (engrenagem no Perfil): ligar ou desligar cada tipo de lembrete, mudar o horário do aviso e sair da conta.
+- O banco do celular passa para a versão 2. As plantas da primeira entrega são mantidas.
+- Testes do cálculo dos lembretes em `app/src/test`. No Android Studio, clique com o botão direito em `CalculoLembretesTest` e escolha **Run**.
+
 ## Como rodar pela primeira vez
 
 ### 1. Supabase (uma vez só, para a equipe toda)
@@ -36,6 +45,7 @@ App Android de cultivo de plantas domésticas, para uso pessoal e de pequenos gr
 | `app/src/main/java/br/com/zamypedia/ui/` | Telas (conta, jardim, navegação, tema) |
 | `app/src/main/java/br/com/zamypedia/dados/local/` | Banco do celular (Room) e sessão |
 | `app/src/main/java/br/com/zamypedia/dados/nuvem/` | Conexão com o Supabase |
+| `app/src/main/java/br/com/zamypedia/lembretes/` | Cálculo dos lembretes e aviso diário |
 | `app/src/main/java/br/com/zamypedia/util/Fotos.kt` | Compressão das fotos |
 | `supabase/` | Scripts SQL para colar no painel do Supabase |
 

@@ -20,6 +20,8 @@ class JardimRepositorio(private val dao: PlantaJardimDao) {
 
     fun planta(id: String): Flow<PlantaJardim?> = dao.observarPorId(id)
 
+    suspend fun listarDoDono(donoId: String): List<PlantaJardim> = dao.listarDoDono(donoId)
+
     suspend fun buscar(id: String): PlantaJardim? = dao.buscarPorId(id)
 
     /** Cria uma planta nova (quando [idExistente] é nulo) ou atualiza uma existente. */
@@ -39,20 +41,31 @@ class JardimRepositorio(private val dao: PlantaJardimDao) {
             Fotos.apagar(anterior.fotoCaminho)
         }
 
-        dao.salvar(
-            PlantaJardim(
-                id = anterior?.id ?: UUID.randomUUID().toString(),
-                donoId = donoId,
-                nomePopular = nomePopular.trim(),
-                nomeCientifico = nomeCientifico?.trim()?.ifBlank { null },
-                vinculo = vinculo.name,
-                fotoCaminho = fotoCaminho,
-                criadoEm = anterior?.criadoEm ?: agora,
-                alteradoEm = agora,
-                apagado = false,
-                pendenteEnvio = true,
-            )
+        // Na edição, copiamos a planta anterior para não perder os dados dos Blocos 01 e 02
+        val planta = anterior?.copy(
+            nomePopular = nomePopular.trim(),
+            nomeCientifico = nomeCientifico?.trim()?.ifBlank { null },
+            vinculo = vinculo.name,
+            fotoCaminho = fotoCaminho,
+            alteradoEm = agora,
+            pendenteEnvio = true,
+        ) ?: PlantaJardim(
+            id = UUID.randomUUID().toString(),
+            donoId = donoId,
+            nomePopular = nomePopular.trim(),
+            nomeCientifico = nomeCientifico?.trim()?.ifBlank { null },
+            vinculo = vinculo.name,
+            fotoCaminho = fotoCaminho,
+            criadoEm = agora,
+            alteradoEm = agora,
         )
+        dao.salvar(planta)
+    }
+
+    /** Aplica uma alteração a uma planta já existente e marca para envio futuro. */
+    suspend fun alterar(id: String, mudanca: (PlantaJardim) -> PlantaJardim) {
+        val atual = dao.buscarPorId(id) ?: return
+        dao.salvar(mudanca(atual).copy(alteradoEm = System.currentTimeMillis(), pendenteEnvio = true))
     }
 
     /**
