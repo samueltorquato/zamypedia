@@ -9,3 +9,9 @@ captures/
 .kotlin/
 # Contém a chave do Supabase e o caminho do Android SDK de cada computador
 local.properties
+# Chave de assinatura do app e APKs gerados: NUNCA enviar ao GitHub (ver DISTRIBUIR.md)
+*.jks
+*.keystore
+app/release/
+*.apk
+*.aab

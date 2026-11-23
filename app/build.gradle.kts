@@ -24,8 +24,8 @@ android {
         applicationId = "br.com.zamypedia"
         minSdk = 26 // Android 8, decidido em 23/11/2026
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
 
         buildConfigField("String", "SUPABASE_URL", "\"${propriedadesLocais.getProperty("supabase.url", "")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${propriedadesLocais.getProperty("supabase.chave_publica", "")}\"")
@@ -82,4 +82,10 @@ dependencies {
     // Fotos: leitura da orientação da câmera e exibição de imagens
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Tarefas em segundo plano: o aviso diário dos lembretes
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+
+    // Testes automáticos do cálculo dos lembretes (rodam no computador, sem celular)
+    testImplementation("junit:junit:4.13.2")
 }

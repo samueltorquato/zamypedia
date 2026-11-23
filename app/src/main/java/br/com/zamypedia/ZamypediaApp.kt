@@ -3,10 +3,13 @@ package br.com.zamypedia
 
 import android.app.Application
 import br.com.zamypedia.dados.JardimRepositorio
+import br.com.zamypedia.dados.RegistrosRepositorio
 import br.com.zamypedia.dados.local.BancoLocal
 import br.com.zamypedia.dados.local.SessaoLocal
 import br.com.zamypedia.dados.nuvem.ContaRepositorio
 import br.com.zamypedia.dados.nuvem.Supabase
+import br.com.zamypedia.lembretes.AvisoDiarioWorker
+import br.com.zamypedia.lembretes.PreferenciasLembretes
 
 /**
  * Criado uma única vez quando o app abre. Guarda as peças compartilhadas por todas as telas
@@ -20,10 +23,22 @@ class ZamypediaApp : Application() {
     val conta: ContaRepositorio by lazy { ContaRepositorio(Supabase.criarCliente(), sessao) }
     lateinit var jardim: JardimRepositorio
         private set
+    lateinit var registros: RegistrosRepositorio
+        private set
+    lateinit var preferenciasLembretes: PreferenciasLembretes
+        private set
 
     override fun onCreate() {
         super.onCreate()
         sessao = SessaoLocal(this)
-        jardim = JardimRepositorio(BancoLocal.criar(this).plantaJardimDao())
+        // Um único banco para o app inteiro
+        val banco = BancoLocal.criar(this)
+        jardim = JardimRepositorio(banco.plantaJardimDao())
+        registros = RegistrosRepositorio(banco.registroDao())
+        preferenciasLembretes = PreferenciasLembretes(this)
+
+        // Garante que o aviso diário esteja agendado. Se já estiver, nada muda.
+        AvisoDiarioWorker.criarCanal(this)
+        AvisoDiarioWorker.agendar(this, preferenciasLembretes.hora)
     }
 }

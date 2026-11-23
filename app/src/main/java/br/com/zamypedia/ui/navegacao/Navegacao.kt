@@ -1,17 +1,26 @@
 // Arquivo: app/src/main/java/br/com/zamypedia/ui/navegacao/Navegacao.kt
 package br.com.zamypedia.ui.navegacao
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,7 +38,9 @@ import br.com.zamypedia.ui.comum.TelaEmBreve
 import br.com.zamypedia.ui.conta.ContaViewModel
 import br.com.zamypedia.ui.conta.TelaCriarConta
 import br.com.zamypedia.ui.conta.TelaEntrar
+import br.com.zamypedia.ui.configuracoes.TelaConfiguracoes
 import br.com.zamypedia.ui.jardim.EdicaoPlantaViewModel
+import br.com.zamypedia.ui.jardim.FichaViewModel
 import br.com.zamypedia.ui.jardim.JardimViewModel
 import br.com.zamypedia.ui.jardim.TelaAdicionarPlanta
 import br.com.zamypedia.ui.jardim.TelaMeuJardim
@@ -47,6 +58,7 @@ private object Rotas {
     const val ADICIONAR = "adicionar"
     const val EDITAR = "editar/{id}"
     const val PLANTA = "planta/{id}"
+    const val CONFIGURACOES = "configuracoes"
 }
 
 /** As quatro abas da barra inferior, com os emojis pedidos no documento de requisitos. */
@@ -94,6 +106,7 @@ fun Navegacao(app: ZamypediaApp) {
             composable(Rotas.JARDIM) {
                 val donoId = app.sessao.usuarioId ?: return@composable
                 val vm: JardimViewModel = viewModel(factory = viewModelFactory { initializer { JardimViewModel(app.jardim, donoId) } })
+                PedirPermissaoDeAvisoUmaVez(app)
                 TelaMeuJardim(
                     vm,
                     aoAdicionar = { nav.navigate(Rotas.ADICIONAR) },
@@ -120,7 +133,11 @@ fun Navegacao(app: ZamypediaApp) {
 
             composable(Rotas.PLANTA, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entrada ->
                 val id = entrada.arguments?.getString("id") ?: return@composable
+                val vm: FichaViewModel = viewModel(
+                    factory = viewModelFactory { initializer { FichaViewModel(app.jardim, app.registros, id) } },
+                )
                 TelaPlanta(
+                    vm,
                     app.jardim,
                     id,
                     aoVoltar = { nav.popBackStack() },
@@ -129,19 +146,32 @@ fun Navegacao(app: ZamypediaApp) {
             }
 
             composable(Rotas.PERFIL) {
+                Box(Modifier.fillMaxSize()) {
+                    TelaEmBreve(
+                        "🏠",
+                        "@${app.sessao.arroba.orEmpty()}",
+                        "Seu perfil, com minibio e plantômetro, chega numa próxima entrega.",
+                    )
+                    // Engrenagem no canto superior direito, como no documento de requisitos
+                    TextButton(
+                        onClick = { nav.navigate(Rotas.CONFIGURACOES) },
+                        modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding(),
+                    ) { Text("⚙️", fontSize = 24.sp) }
+                }
+            }
+
+            composable(Rotas.CONFIGURACOES) {
                 val escopo = rememberCoroutineScope()
-                TelaEmBreve(
-                    "🏠",
-                    "@${app.sessao.arroba.orEmpty()}",
-                    "Seu perfil, com minibio e plantômetro, chega numa próxima entrega.",
-                ) {
-                    OutlinedButton(onClick = {
+                TelaConfiguracoes(
+                    app.preferenciasLembretes,
+                    aoVoltar = { nav.popBackStack() },
+                    aoSair = {
                         escopo.launch {
                             app.conta.sair()
                             nav.navigate(Rotas.ENTRAR) { popUpTo(nav.graph.id) { inclusive = true } }
                         }
-                    }) { Text("Sair da conta") }
-                }
+                    },
+                )
             }
 
             composable(Rotas.LINHA_DO_TEMPO) {
@@ -179,4 +209,20 @@ private fun BarraInferior(nav: NavHostController, rotaAtual: String?) {
 /** Depois de entrar, o Meu Jardim vira a primeira tela e o botão Voltar não leva de novo ao login. */
 private fun irParaJardimLimpandoHistorico(nav: NavHostController) {
     nav.navigate(Rotas.JARDIM) { popUpTo(nav.graph.id) { inclusive = true } }
+}
+
+/**
+ * No Android 13 ou mais novo, avisos precisam de autorização.
+ * Pedimos uma única vez, ao abrir o Meu Jardim. Depois, só pela tela de Configurações.
+ */
+@Composable
+private fun PedirPermissaoDeAvisoUmaVez(app: ZamypediaApp) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    val pedir = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    LaunchedEffect(Unit) {
+        if (!app.preferenciasLembretes.jaPediuPermissao) {
+            app.preferenciasLembretes.jaPediuPermissao = true
+            pedir.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 }
